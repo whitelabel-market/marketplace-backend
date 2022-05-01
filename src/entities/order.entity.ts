@@ -1,7 +1,8 @@
 import { IsNotEmpty } from 'class-validator';
-import { BaseEntity, Entity, Column, CreateDateColumn, UpdateDateColumn, Unique, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Entity, Column, CreateDateColumn, UpdateDateColumn, Unique, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
 import { Order } from '@interfaces/order.interface';
-import { ethers } from 'ethers';
+import { AssetEntity } from '@entities/asset.entity';
+import { OrderDataEntity } from '@entities/orderData.entity';
 
 @Entity()
 export class OrderEntity extends BaseEntity implements Order {
@@ -15,10 +16,30 @@ export class OrderEntity extends BaseEntity implements Order {
   @Column()
   taker: string;
 
+  @OneToOne(() => AssetEntity)
+  @JoinColumn()
+  @IsNotEmpty()
+  make: AssetEntity;
+
+  @OneToOne(() => AssetEntity)
+  @JoinColumn()
+  @IsNotEmpty()
+  take: AssetEntity;
+
   @Column()
   @IsNotEmpty()
   @Unique(['salt'])
-  salt: string; // ethers.BigNumber
+  salt: string;
+
+  @Column()
+  start: Date;
+
+  @Column()
+  end: Date;
+
+  @OneToOne(() => OrderDataEntity)
+  @JoinColumn()
+  orderData: OrderDataEntity;
 
   @Column()
   @CreateDateColumn()

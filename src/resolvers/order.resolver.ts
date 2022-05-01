@@ -14,7 +14,7 @@ export class orderResolver extends OrderRepository {
   }
 
   @Query(() => Order, {
-    description: 'Order find by id',
+    description: 'Order find by hash',
   })
   async getOrderByHash(@Arg('orderHash') orderHash: string): Promise<Order> {
     const order: Order = await this.orderFindByHash(orderHash);
