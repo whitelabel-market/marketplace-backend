@@ -21,6 +21,7 @@ model User {
   firstname String?
   lastname  String?
   posts     Post[]
+  orders    Order[]
   role      Role
 }
 
@@ -38,4 +39,15 @@ model Post {
 enum Role {
   ADMIN
   USER
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  published Boolean
+  title     String
+  content   String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?
 }

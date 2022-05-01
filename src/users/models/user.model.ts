@@ -5,6 +5,7 @@ import {
   Field,
 } from '@nestjs/graphql';
 import { Post } from 'src/posts/models/post.model';
+import { Order } from 'src/orders/models/order.model';
 import { BaseModel } from 'src/common/models/base.model';
 import { Role } from '@prisma/client';
 
@@ -21,6 +22,7 @@ export class User extends BaseModel {
   @Field(() => Role)
   role: Role;
   posts: Post[];
+  orders: Order[];
   @HideField()
   password: string;
 }

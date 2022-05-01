@@ -1,0 +1,55 @@
+query UserOrders {
+  userOrders(userId: "USER_ID") {
+    ...OrderData
+  }
+}
+
+query PublishedOrdersConnection {
+  publishedOrders(first: 20, orderBy: { field: title, direction: desc }) {
+    totalCount
+    edges {
+      cursor
+      node {
+        ...OrderData
+        author {
+          ...UserData
+        }
+      }
+    }
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
+mutation CreateOrder {
+  createOrder(data: { content: "Hello", title: "New Order" }) {
+    ...OrderData
+  }
+}
+
+subscription SubscriptionOrder {
+  orderCreated {
+    ...OrderData
+  }
+}
+
+fragment OrderData on Order {
+  id
+  createdAt
+  updatedAt
+  published
+  title
+  content
+}
+
+fragment UserData on User {
+  id
+  email
+  firstname
+  lastname
+  role
+}

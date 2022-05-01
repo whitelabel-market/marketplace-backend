@@ -15,31 +15,31 @@ import { PaginationArgs } from 'src/common/pagination/pagination.args';
 import { UserEntity } from 'src/common/decorators/user.decorator';
 import { User } from 'src/users/models/user.model';
 import { GqlAuthGuard } from 'src/auth/gql-auth.guard';
-import { PostIdArgs } from './args/post-id.args';
+import { OrderIdArgs } from './args/order-id.args';
 import { UserIdArgs } from './args/user-id.args';
-import { Post } from './models/post.model';
-import { PostConnection } from './models/post-connection.model';
-import { PostSort } from './dto/post-sort.input';
-import { CreatePostInput } from './dto/createPost.input';
+import { Order } from './models/order.model';
+import { OrderConnection } from './models/order-connection.model';
+import { OrderSort } from './dto/order-sort.input';
+import { CreateOrderInput } from './dto/createOrder.input';
 
 const pubSub = new PubSub();
 
-@Resolver(() => Post)
-export class PostsResolver {
+@Resolver(() => Order)
+export class OrdersResolver {
   constructor(private prisma: PrismaService) {}
 
-  @Subscription(() => Post)
-  postCreated() {
-    return pubSub.asyncIterator('postCreated');
+  @Subscription(() => Order)
+  orderCreated() {
+    return pubSub.asyncIterator('orderCreated');
   }
 
   @UseGuards(GqlAuthGuard)
-  @Mutation(() => Post)
-  async createPost(
+  @Mutation(() => Order)
+  async createOrder(
     @UserEntity() user: User,
-    @Args('data') data: CreatePostInput
+    @Args('data') data: CreateOrderInput
   ) {
-    const newPost = this.prisma.post.create({
+    const newOrder = this.prisma.order.create({
       data: {
         published: true,
         title: data.title,
@@ -47,25 +47,25 @@ export class PostsResolver {
         authorId: user.id,
       },
     });
-    pubSub.publish('postCreated', { postCreated: newPost });
-    return newPost;
+    pubSub.publish('orderCreated', { orderCreated: newOrder });
+    return newOrder;
   }
 
-  @Query(() => PostConnection)
-  async publishedPosts(
+  @Query(() => OrderConnection)
+  async publishedOrders(
     @Args() { after, before, first, last }: PaginationArgs,
     @Args({ name: 'query', type: () => String, nullable: true })
     query: string,
     @Args({
       name: 'orderBy',
-      type: () => PostSort,
+      type: () => OrderSort,
       nullable: true,
     })
-    orderBy: PostSort
+    orderBy: OrderSort
   ) {
     const a = await findManyCursorConnection(
       (args) =>
-        this.prisma.post.findMany({
+        this.prisma.order.findMany({
           include: { author: true },
           where: {
             published: true,
@@ -75,7 +75,7 @@ export class PostsResolver {
           ...args,
         }),
       () =>
-        this.prisma.post.count({
+        this.prisma.order.count({
           where: {
             published: true,
             title: { contains: query || '' },
@@ -86,14 +86,14 @@ export class PostsResolver {
     return a;
   }
 
-  @Query(() => [Post])
-  userPosts(@Args() id: UserIdArgs) {
+  @Query(() => [Order])
+  userOrders(@Args() id: UserIdArgs) {
     return this.prisma.user
       .findUnique({ where: { id: id.userId } })
-      .posts({ where: { published: true } });
+      .orders({ where: { published: true } });
 
     // or
-    // return this.prisma.posts.findMany({
+    // return this.prisma.orders.findMany({
     //   where: {
     //     published: true,
     //     author: { id: id.userId }
@@ -101,13 +101,13 @@ export class PostsResolver {
     // });
   }
 
-  @Query(() => Post)
-  async post(@Args() id: PostIdArgs) {
-    return this.prisma.post.findUnique({ where: { id: id.postId } });
+  @Query(() => Order)
+  async order(@Args() id: OrderIdArgs) {
+    return this.prisma.order.findUnique({ where: { id: id.orderId } });
   }
 
   @ResolveField('author')
-  async author(@Parent() post: Post) {
-    return this.prisma.post.findUnique({ where: { id: post.id } }).author();
+  async author(@Parent() order: Order) {
+    return this.prisma.order.findUnique({ where: { id: order.id } }).author();
   }
 }
