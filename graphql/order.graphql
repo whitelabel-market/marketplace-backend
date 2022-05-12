@@ -1,0 +1,101 @@
+mutation CreateOrder {
+  createOrder(data: {
+    maker: "0x23479a6877970E5889dfaD779e225aDC08eB8E03"
+    taker: "0x23479a6877970E5889dfaD779e225aDC08eB8E03"
+    start: "2022-07-20T17:30:15+05:30"
+    end: "2022-07-20T17:30:15+05:30"
+    hash: "hash1"
+    salt: "1234"
+    signature: "signature1"
+    make: {
+      type: {
+        data: "assetTypeData1"
+        nft: true
+        type: "assetTypeType1"
+      }
+      value: "makeValue1"
+    }
+    take: {
+      type: {
+        data: "assetTypeData1"
+        nft: true
+        type: "assetTypeType1"
+      }
+      value: "takeValue1"
+    }
+    orderData: {
+      isMakeFill: true
+      originFees: []
+      payouts: []
+    }
+  }) {
+    ...OrderData
+  }
+}
+
+subscription SubscriptionOrder {
+  orderCreated {
+    ...OrderData
+  }
+}
+
+fragment OrderData on Order {
+  id
+  createdAt
+  updatedAt
+  start
+  end
+  hash
+  make {
+    ...AssetData
+  }
+  take {
+    ...AssetData
+  }
+  maker
+  taker
+  orderData {
+    ...OrderDataData
+  }
+  salt
+  signature
+}
+
+fragment AssetData on Asset {
+  id
+  createdAt
+  updatedAt
+  value
+  type {
+    ...AssetTypeData
+  }
+}
+
+fragment AssetTypeData on AssetType {
+  id
+  createdAt
+  updatedAt
+  data
+  type
+  nft
+}
+
+fragment OrderDataData on OrderData {
+  id
+  createdAt
+  updatedAt
+  originFees {
+    ...PartData
+  }
+  payouts {
+    ...PartData
+  }
+}
+
+fragment PartData on Part {
+  id
+  createdAt
+  updatedAt
+  account
+  value
+}

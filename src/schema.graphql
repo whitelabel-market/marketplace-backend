@@ -1,0 +1,286 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Asset {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  id: ID!
+  type: AssetType!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+  value: String!
+}
+
+type AssetType {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  data: String!
+  id: ID!
+  nft: Boolean!
+  type: String!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+}
+
+type Auth {
+  """JWT access token"""
+  accessToken: JWT!
+
+  """JWT refresh token"""
+  refreshToken: JWT!
+  user: User!
+}
+
+input ChangePasswordInput {
+  newPassword: String!
+  oldPassword: String!
+}
+
+input CreateAssetInput {
+  type: CreateAssetTypeInput!
+  value: String!
+}
+
+input CreateAssetTypeInput {
+  data: String!
+  nft: Boolean!
+  type: String!
+}
+
+input CreateOrderDataInput {
+  isMakeFill: Boolean!
+  originFees: [CreatePartInput!]!
+  payouts: [CreatePartInput!]!
+}
+
+input CreateOrderInput {
+  end: DateTime
+  hash: String!
+  make: CreateAssetInput!
+  maker: String!
+  orderData: CreateOrderDataInput!
+  salt: String!
+  signature: String
+  start: DateTime
+  take: CreateAssetInput!
+  taker: String
+}
+
+input CreatePartInput {
+  account: String!
+  value: String!
+}
+
+input CreatePostInput {
+  content: String!
+  title: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+"""
+A field whose value is a JSON Web Token (JWT): https://jwt.io/introduction.
+"""
+scalar JWT
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  changePassword(data: ChangePasswordInput!): User!
+  createOrder(data: CreateOrderInput!): Order!
+  createPost(data: CreatePostInput!): Post!
+  login(data: LoginInput!): Auth!
+  refreshToken(token: JWT!): Token!
+  signup(data: SignupInput!): Auth!
+  updateUser(data: UpdateUserInput!): User!
+}
+
+type Order {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  end: DateTime!
+  hash: String!
+  id: ID!
+  make: Asset!
+  maker: String!
+  orderData: OrderData!
+  salt: String!
+  signature: String
+  start: DateTime!
+  take: Asset!
+  taker: String
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+}
+
+type OrderConnection {
+  edges: [OrderEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type OrderData {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  id: ID!
+  isMakeFill: Boolean!
+  originFees: [Part!]!
+  payouts: [Part!]!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+}
+
+type OrderEdge {
+  cursor: String!
+  node: Order!
+}
+
+input OrderSort {
+  direction: SortDirection!
+  field: OrderSortField!
+}
+
+"""Properties by which order connections can be ordered."""
+enum OrderSortField {
+  content
+  createdAt
+  id
+  published
+  title
+  updatedAt
+}
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+type Part {
+  account: String!
+
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  id: ID!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+  value: String!
+}
+
+type Post {
+  author: User!
+  content: String!
+
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  id: ID!
+  published: Boolean!
+  title: String!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+}
+
+type PostConnection {
+  edges: [PostEdge!]
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type PostEdge {
+  cursor: String!
+  node: Post!
+}
+
+input PostSort {
+  direction: SortDirection!
+  field: PostSortField!
+}
+
+"""Properties by which post connections can be ordered."""
+enum PostSortField {
+  content
+  createdAt
+  id
+  published
+  title
+  updatedAt
+}
+
+type Query {
+  hello(name: String!): String!
+  helloWorld: String!
+  me: User!
+  order(orderId: String!): Order!
+  post(postId: String!): Post!
+  publishedOrders(after: String, before: String, first: Int, last: Int, orderBy: OrderSort, query: String, skip: Int): OrderConnection!
+  publishedPosts(after: String, before: String, first: Int, last: Int, orderBy: PostSort, query: String, skip: Int): PostConnection!
+  userPosts(userId: String!): [Post!]!
+}
+
+"""User role"""
+enum Role {
+  ADMIN
+  USER
+}
+
+input SignupInput {
+  email: String!
+  firstname: String
+  lastname: String
+  password: String!
+}
+
+"""
+Possible directions in which to order a list of items when provided an `orderBy` argument.
+"""
+enum SortDirection {
+  asc
+  desc
+}
+
+type Subscription {
+  orderCreated: Order!
+  postCreated: Post!
+}
+
+type Token {
+  """JWT access token"""
+  accessToken: JWT!
+
+  """JWT refresh token"""
+  refreshToken: JWT!
+}
+
+input UpdateUserInput {
+  firstname: String
+  lastname: String
+}
+
+type User {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  email: String!
+  firstname: String
+  id: ID!
+  lastname: String
+  orders: [Order!]!
+  posts: [Post!]!
+  role: Role!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+}

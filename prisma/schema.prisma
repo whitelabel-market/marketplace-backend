@@ -1,0 +1,104 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  // previewFeatures = []
+}
+
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String   @unique
+  password  String
+  firstname String?
+  lastname  String?
+  posts     Post[]
+  role      Role
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  published Boolean
+  title     String
+  content   String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model AssetType {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  type      String
+  data      String
+  nft       Boolean
+  asset     Asset?
+}
+
+model Asset {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  type        AssetType @relation(fields: [typeId], references: [id])
+  typeId      String
+  value       String
+  makeOrder   Order?    @relation("make")
+  takeOrder   Order?    @relation("take")
+}
+
+ model Part {
+   id                    String   @id @default(cuid())
+   createdAt             DateTime @default(now())
+   updatedAt             DateTime @updatedAt
+   account               String
+   value                 String
+   payoutsOrderData      OrderData @relation("payouts", fields: [payoutsOrderDataId], references: [id])
+   payoutsOrderDataId    String
+   originFeesOrderData   OrderData @relation("originFees", fields: [originFeesOrderDataId], references: [id])
+   originFeesOrderDataId String
+ }
+
+ model OrderData {
+   id         String    @id @default(cuid())
+   createdAt  DateTime  @default(now())
+   updatedAt  DateTime  @updatedAt
+   payouts    Part[]    @relation("payouts")
+   originFees Part[]    @relation("originFees")
+   isMakeFill Boolean
+   Order      Order?
+ }
+
+
+model Order {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  maker       String
+  taker       String?
+  make        Asset    @relation("make", fields: [makeId], references: [id])
+  makeId      String
+  take        Asset    @relation("take", fields: [takeId], references: [id])
+  takeId      String
+  salt        String
+  hash        String
+  start       DateTime
+  end         DateTime
+  orderData   OrderData @relation(fields: [orderDataId], references: [id])
+  orderDataId String
+  signature   String?
+}

@@ -1,24 +1,24 @@
-# Common build stage
-FROM node:14.14.0-alpine3.12 as common-build-stage
+FROM node:14 AS builder
 
-COPY . ./app
-
+# Create app directory
 WORKDIR /app
 
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install app dependencies
 RUN npm install
 
+COPY . .
+
+RUN npm run build
+
+FROM node:14
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 3000
-
-# Development build stage
-FROM common-build-stage as development-build-stage
-
-ENV NODE_ENV development
-
-CMD ["npm", "run", "dev"]
-
-# Production build stage
-FROM common-build-stage as production-build-stage
-
-ENV NODE_ENV production
-
-CMD ["npm", "run", "start"]
+CMD [ "npm", "run", "start:prod" ]
