@@ -11,7 +11,6 @@ Table User {
   firstname String
   lastname String
   posts Post [not null]
-  orders Order [not null]
   role Role [not null]
 }
 
@@ -26,15 +25,66 @@ Table Post {
   authorId String
 }
 
+Table AssetType {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  type String [not null]
+  data String [not null]
+  nft Boolean [not null]
+  asset Asset
+}
+
+Table Asset {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  type AssetType [not null]
+  typeId String [unique, not null]
+  value String [not null]
+  makeOrder Order
+  takeOrder Order
+}
+
+Table Part {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  account String [not null]
+  value String [not null]
+  payoutsOrderData OrderData [not null]
+  payoutsOrderDataId String [not null]
+  originFeesOrderData OrderData [not null]
+  originFeesOrderDataId String [not null]
+}
+
+Table OrderData {
+  id String [pk]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  payouts Part [not null]
+  originFees Part [not null]
+  isMakeFill Boolean [not null]
+  Order Order
+}
+
 Table Order {
   id String [pk]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-  published Boolean [not null]
-  title String [not null]
-  content String
-  author User
-  authorId String
+  maker String [not null]
+  taker String
+  make Asset [not null]
+  makeId String [unique, not null]
+  take Asset [not null]
+  takeId String [unique, not null]
+  salt String [not null]
+  hash String [not null]
+  start DateTime [not null]
+  end DateTime [not null]
+  orderData OrderData [not null]
+  orderDataId String [unique, not null]
+  signature String
 }
 
 Enum Role {
@@ -44,4 +94,14 @@ Enum Role {
 
 Ref: Post.authorId > User.id
 
-Ref: Order.authorId > User.id
+Ref: Asset.typeId - AssetType.id
+
+Ref: Part.payoutsOrderDataId > OrderData.id
+
+Ref: Part.originFeesOrderDataId > OrderData.id
+
+Ref: Order.makeId - Asset.id
+
+Ref: Order.takeId - Asset.id
+
+Ref: Order.orderDataId - OrderData.id

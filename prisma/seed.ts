@@ -47,7 +47,6 @@ async function main() {
       },
     },
   });
-
   console.log({ user1, user2 });
 }
 

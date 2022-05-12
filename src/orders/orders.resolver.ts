@@ -1,22 +1,11 @@
 import { PrismaService } from 'nestjs-prisma';
-import {
-  Resolver,
-  Query,
-  Parent,
-  Args,
-  ResolveField,
-  Subscription,
-  Mutation,
-} from '@nestjs/graphql';
+import { Resolver, Query, Args, Subscription, Mutation } from '@nestjs/graphql';
 import { findManyCursorConnection } from '@devoxa/prisma-relay-cursor-connection';
 import { PubSub } from 'graphql-subscriptions';
-import { UseGuards } from '@nestjs/common';
 import { PaginationArgs } from 'src/common/pagination/pagination.args';
 import { UserEntity } from 'src/common/decorators/user.decorator';
 import { User } from 'src/users/models/user.model';
-import { GqlAuthGuard } from 'src/auth/gql-auth.guard';
 import { OrderIdArgs } from './args/order-id.args';
-import { UserIdArgs } from './args/user-id.args';
 import { Order } from './models/order.model';
 import { OrderConnection } from './models/order-connection.model';
 import { OrderSort } from './dto/order-sort.input';
@@ -33,7 +22,7 @@ export class OrdersResolver {
     return pubSub.asyncIterator('orderCreated');
   }
 
-  @UseGuards(GqlAuthGuard)
+  // @UseGuards(GqlAuthGuard)
   @Mutation(() => Order)
   async createOrder(
     @UserEntity() user: User,
@@ -41,10 +30,78 @@ export class OrdersResolver {
   ) {
     const newOrder = this.prisma.order.create({
       data: {
-        published: true,
-        title: data.title,
-        content: data.content,
-        authorId: user.id,
+        maker: data.maker,
+        taker: data.taker,
+        make: {
+          create: {
+            value: data.make.value,
+            type: {
+              create: {
+                type: data.make.type.type,
+                nft: data.make.type.nft,
+                data: data.make.type.data,
+              },
+            },
+          },
+        },
+        take: {
+          create: {
+            value: data.take.value,
+            type: {
+              create: {
+                type: data.take.type.type,
+                nft: data.take.type.nft,
+                data: data.take.type.data,
+              },
+            },
+          },
+        },
+        salt: data.salt,
+        hash: data.hash,
+        start: data.start,
+        end: data.end,
+        orderData: {
+          create: {
+            payouts: {
+              createMany: {
+                data: data.orderData.payouts.map((part) => ({
+                  account: part.account,
+                  value: part.value,
+                  originFeesOrderDataId: data.orderData.id,
+                })),
+              },
+            },
+            originFees: {
+              createMany: {
+                data: data.orderData.originFees.map((part) => ({
+                  account: part.account,
+                  value: part.value,
+                  payoutsOrderDataId: data.orderData.id,
+                })),
+              },
+            },
+            isMakeFill: data.orderData.isMakeFill,
+          },
+        },
+        signature: data.signature,
+      },
+      include: {
+        make: {
+          include: {
+            type: true,
+          },
+        },
+        take: {
+          include: {
+            type: true,
+          },
+        },
+        orderData: {
+          include: {
+            originFees: true,
+            payouts: true,
+          },
+        },
       },
     });
     pubSub.publish('orderCreated', { orderCreated: newOrder });
@@ -66,10 +123,8 @@ export class OrdersResolver {
     const a = await findManyCursorConnection(
       (args) =>
         this.prisma.order.findMany({
-          include: { author: true },
           where: {
-            published: true,
-            title: { contains: query || '' },
+            maker: { contains: query || '' },
           },
           orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : null,
           ...args,
@@ -77,8 +132,7 @@ export class OrdersResolver {
       () =>
         this.prisma.order.count({
           where: {
-            published: true,
-            title: { contains: query || '' },
+            maker: { contains: query || '' },
           },
         }),
       { first, last, before, after }
@@ -86,28 +140,8 @@ export class OrdersResolver {
     return a;
   }
 
-  @Query(() => [Order])
-  userOrders(@Args() id: UserIdArgs) {
-    return this.prisma.user
-      .findUnique({ where: { id: id.userId } })
-      .orders({ where: { published: true } });
-
-    // or
-    // return this.prisma.orders.findMany({
-    //   where: {
-    //     published: true,
-    //     author: { id: id.userId }
-    //   }
-    // });
-  }
-
   @Query(() => Order)
   async order(@Args() id: OrderIdArgs) {
     return this.prisma.order.findUnique({ where: { id: id.orderId } });
-  }
-
-  @ResolveField('author')
-  async author(@Parent() order: Order) {
-    return this.prisma.order.findUnique({ where: { id: order.id } }).author();
   }
 }

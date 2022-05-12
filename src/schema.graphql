@@ -2,6 +2,29 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Asset {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  id: ID!
+  type: AssetType!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+  value: String!
+}
+
+type AssetType {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  data: String!
+  id: ID!
+  nft: Boolean!
+  type: String!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+}
+
 type Auth {
   """JWT access token"""
   accessToken: JWT!
@@ -16,9 +39,39 @@ input ChangePasswordInput {
   oldPassword: String!
 }
 
+input CreateAssetInput {
+  type: CreateAssetTypeInput!
+  value: String!
+}
+
+input CreateAssetTypeInput {
+  data: String!
+  nft: Boolean!
+  type: String!
+}
+
+input CreateOrderDataInput {
+  isMakeFill: Boolean!
+  originFees: [CreatePartInput!]!
+  payouts: [CreatePartInput!]!
+}
+
 input CreateOrderInput {
-  content: String!
-  title: String!
+  end: DateTime
+  hash: String!
+  make: CreateAssetInput!
+  maker: String!
+  orderData: CreateOrderDataInput!
+  salt: String!
+  signature: String
+  start: DateTime
+  take: CreateAssetInput!
+  taker: String
+}
+
+input CreatePartInput {
+  account: String!
+  value: String!
 }
 
 input CreatePostInput {
@@ -52,14 +105,19 @@ type Mutation {
 }
 
 type Order {
-  author: User!
-  content: String!
-
   """Identifies the date and time when the object was created."""
   createdAt: DateTime!
+  end: DateTime!
+  hash: String!
   id: ID!
-  published: Boolean!
-  title: String!
+  make: Asset!
+  maker: String!
+  orderData: OrderData!
+  salt: String!
+  signature: String
+  start: DateTime!
+  take: Asset!
+  taker: String
 
   """Identifies the date and time when the object was last updated."""
   updatedAt: DateTime!
@@ -69,6 +127,18 @@ type OrderConnection {
   edges: [OrderEdge!]
   pageInfo: PageInfo!
   totalCount: Int!
+}
+
+type OrderData {
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  id: ID!
+  isMakeFill: Boolean!
+  originFees: [Part!]!
+  payouts: [Part!]!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
 }
 
 type OrderEdge {
@@ -96,6 +166,18 @@ type PageInfo {
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
+}
+
+type Part {
+  account: String!
+
+  """Identifies the date and time when the object was created."""
+  createdAt: DateTime!
+  id: ID!
+
+  """Identifies the date and time when the object was last updated."""
+  updatedAt: DateTime!
+  value: String!
 }
 
 type Post {
@@ -146,7 +228,6 @@ type Query {
   post(postId: String!): Post!
   publishedOrders(after: String, before: String, first: Int, last: Int, orderBy: OrderSort, query: String, skip: Int): OrderConnection!
   publishedPosts(after: String, before: String, first: Int, last: Int, orderBy: PostSort, query: String, skip: Int): PostConnection!
-  userOrders(userId: String!): [Order!]!
   userPosts(userId: String!): [Post!]!
 }
 
