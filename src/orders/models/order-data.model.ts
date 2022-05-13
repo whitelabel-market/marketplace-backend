@@ -1,6 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseModel } from 'src/common/models/base.model';
 import { Part } from './part.model';
+import { defaultAbiCoder } from 'ethers/lib/utils';
 
 @ObjectType()
 export class OrderData extends BaseModel {
@@ -14,14 +15,13 @@ export class OrderData extends BaseModel {
   isMakeFill: boolean;
 
   toEthereum() {
-    // return defaultAbiCoder.encode(
-    //   ['address[]', 'address[]', 'uint8'],
-    //   [
-    //     this.payouts.map((p) => p.toEthereum()),
-    //     this.originFees.map((f) => f.toEthereum()),
-    //     this.isMakeFill ? 1 : 0,
-    //   ]
-    // );
-    return 'encoded';
+    return defaultAbiCoder.encode(
+      ['address[]', 'address[]', 'uint8'],
+      [
+        this.payouts.map((p) => p.toEthereum()),
+        this.originFees.map((f) => f.toEthereum()),
+        this.isMakeFill ? 1 : 0,
+      ]
+    );
   }
 }

@@ -153,11 +153,13 @@ input OrderSort {
 
 """Properties by which order connections can be ordered."""
 enum OrderSortField {
-  content
   createdAt
+  end
+  hash
   id
-  published
-  title
+  maker
+  start
+  taker
   updatedAt
 }
 
@@ -225,8 +227,8 @@ type Query {
   helloWorld: String!
   me: User!
   order(orderId: String!): Order!
+  orders(after: String, before: String, first: Int, last: Int, orderBy: OrderSort, query: String, skip: Int): OrderConnection!
   post(postId: String!): Post!
-  publishedOrders(after: String, before: String, first: Int, last: Int, orderBy: OrderSort, query: String, skip: Int): OrderConnection!
   publishedPosts(after: String, before: String, first: Int, last: Int, orderBy: PostSort, query: String, skip: Int): PostConnection!
   userPosts(userId: String!): [Post!]!
 }

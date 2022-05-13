@@ -5,9 +5,11 @@ export enum OrderSortField {
   id = 'id',
   createdAt = 'createdAt',
   updatedAt = 'updatedAt',
-  published = 'published',
-  title = 'title',
-  content = 'content',
+  maker = 'maker',
+  taker = 'taker',
+  hash = 'hash',
+  start = 'start',
+  end = 'end',
 }
 
 registerEnumType(OrderSortField, {

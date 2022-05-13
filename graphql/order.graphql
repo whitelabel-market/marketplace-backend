@@ -1,3 +1,21 @@
+query OrderConnection {
+  orders(first: 20, orderBy: { field: maker, direction: desc }) {
+    totalCount
+    edges {
+      cursor
+      node {
+        ...OrderData
+      }
+    }
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
 mutation CreateOrder {
   createOrder(data: {
     maker: "0x23479a6877970E5889dfaD779e225aDC08eB8E03"

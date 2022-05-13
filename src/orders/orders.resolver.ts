@@ -1,5 +1,5 @@
 import { PrismaService } from 'nestjs-prisma';
-import { Resolver, Query, Args, Subscription, Mutation } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { findManyCursorConnection } from '@devoxa/prisma-relay-cursor-connection';
 import { PubSub } from 'graphql-subscriptions';
 import { PaginationArgs } from 'src/common/pagination/pagination.args';
@@ -10,6 +10,12 @@ import { Order } from './models/order.model';
 import { OrderConnection } from './models/order-connection.model';
 import { OrderSort } from './dto/order-sort.input';
 import { CreateOrderInput } from './dto/createOrder.input';
+
+const include = {
+  make: { include: { type: true } },
+  take: { include: { type: true } },
+  orderData: { include: { payouts: true, originFees: true } },
+};
 
 const pubSub = new PubSub();
 
@@ -104,12 +110,12 @@ export class OrdersResolver {
         },
       },
     });
-    pubSub.publish('orderCreated', { orderCreated: newOrder });
+    await pubSub.publish('orderCreated', { orderCreated: newOrder });
     return newOrder;
   }
 
   @Query(() => OrderConnection)
-  async publishedOrders(
+  orders(
     @Args() { after, before, first, last }: PaginationArgs,
     @Args({ name: 'query', type: () => String, nullable: true })
     query: string,
@@ -120,28 +126,23 @@ export class OrdersResolver {
     })
     orderBy: OrderSort
   ) {
-    const a = await findManyCursorConnection(
+    return findManyCursorConnection(
       (args) =>
         this.prisma.order.findMany({
-          where: {
-            maker: { contains: query || '' },
-          },
+          include,
           orderBy: orderBy ? { [orderBy.field]: orderBy.direction } : null,
           ...args,
         }),
-      () =>
-        this.prisma.order.count({
-          where: {
-            maker: { contains: query || '' },
-          },
-        }),
+      () => this.prisma.order.count(),
       { first, last, before, after }
     );
-    return a;
   }
 
   @Query(() => Order)
-  async order(@Args() id: OrderIdArgs) {
-    return this.prisma.order.findUnique({ where: { id: id.orderId } });
+  async order(@Args() args: OrderIdArgs) {
+    return this.prisma.order.findUnique({
+      include,
+      where: { id: args.orderId },
+    });
   }
 }
